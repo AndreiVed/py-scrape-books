@@ -1,16 +1,17 @@
-from typing import Generator, re
+from typing import Generator
 
 import scrapy
 from scrapy.http import Response
 
 from books.items import BooksItem
+import re
 
 
 class BooksSpiderSpider(scrapy.Spider):
     name = "books_spider"
     allowed_domains = ["books.toscrape.com"]
     start_urls = ["https://books.toscrape.com/"]
-    raiting_dict = {
+    rating_dict = {
         "One": 1,
         "Two": 2,
         "Three": 3,
@@ -23,11 +24,7 @@ class BooksSpiderSpider(scrapy.Spider):
         price = float(
             response.css(".price_color::text").get().replace("£", "")
         )
-        # amount_in_stock = int(
-        #         response.css(
-        #             "th:contains('Availability') + td::text"
-        #         ).get().split()[2].strip("(")
-        #     )
+
         availability_text = response.css(
             "th:contains('Availability') + td::text"
         ).get()
@@ -41,10 +38,10 @@ class BooksSpiderSpider(scrapy.Spider):
             if match:
                 amount_in_stock = int(match.group(1))
 
-        raiting_str = response.css(
+        rating_str = response.css(
             "p.star-rating::attr(class)"
         ).get().split()[1]
-        raiting = self.raiting_dict[raiting_str]
+        rating = self.rating_dict[rating_str]
         category = response.css(
             ".breadcrumb li:nth-last-child(2) a::text"
         ).get()
@@ -59,7 +56,7 @@ class BooksSpiderSpider(scrapy.Spider):
             title=title,
             price=price,
             amount_in_stock=amount_in_stock,
-            raiting=raiting,
+            rating=rating,
             category=category,
             description=description,
             upc=upc
